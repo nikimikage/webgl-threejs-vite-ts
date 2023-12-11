@@ -1,67 +1,56 @@
-import './style.css'
-import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import vertexSource from './shader/vertex.glsl?raw'
 import fragmentSource from './shader/fragment.glsl?raw'
-import { Stage } from '../../common/stage'
+import * as THREE from 'three'
 
-/* scene
---------------------------------------*/
-const scene = new THREE.Scene()
-
-/* camera
---------------------------------------*/
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.position.x = 50
-camera.position.y = 50
-camera.position.z = 100
-camera.lookAt(scene.position)
-
-/* renderer
---------------------------------------*/
-const renderer = new THREE.WebGLRenderer()
-renderer.setClearColor(new THREE.Color(0x000000))
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
-
-/* Geometry
---------------------------------------*/
-const boxGeometry = new THREE.BoxGeometry(40, 40, 40, 10, 10, 10)
-
-/* Material
---------------------------------------*/
-const shaderMaterial = new THREE.RawShaderMaterial({
-  uniforms: {
-    time: {
-      value: 0,
-    },
-    radius: {
-      value: 30.0,
-    },
-  },
-  vertexShader: vertexSource,
-  fragmentShader: fragmentSource,
-  wireframe: true,
-})
-
-/* Mesh
---------------------------------------*/
-const mesh = new THREE.Mesh(boxGeometry, shaderMaterial)
-scene.add(mesh)
-
-const updateShader = (time?: number) => {
-  mesh.material.uniforms.time.value = time
+const canvasEl = document.getElementById('webgl-canvas')
+const canvasSize = {
+  w: window.innerWidth,
+  h: window.innerHeight,
 }
 
-/* OrbitControls
---------------------------------------*/
-const orbitControls = new OrbitControls(camera, renderer.domElement)
-orbitControls.autoRotate = false
-orbitControls.enableDamping = true
-orbitControls.dampingFactor = 0.12
+const renderer = new THREE.WebGLRenderer({ canvas: canvasEl })
+renderer.setPixelRatio(window.devicePixelRatio)
+renderer.setSize(canvasSize.w, canvasSize.h)
 
-/* Stage
---------------------------------------*/
-const stage = new Stage({ scene, camera, renderer })
-stage.addFrameTask({ taskName: 'updateShader', task: updateShader })
-stage.start()
+// ウィンドウとwebGLの座標を一致させるため、描画がウィンドウぴったりになるようカメラを調整
+const fov = 60 // 視野角
+const fovRad = (fov / 2) * (Math.PI / 180)
+const dist = canvasSize.h / 2 / Math.tan(fovRad)
+const camera = new THREE.PerspectiveCamera(fov, canvasSize.w / canvasSize.h, 0.1, 1000)
+camera.position.z = dist
+
+const scene = new THREE.Scene()
+
+const loader = new THREE.TextureLoader()
+const texture = loader.load('https://source.unsplash.com/whOkVvf0_hU/')
+
+const uniforms = {
+  uTexture: { value: texture },
+  uImageAspect: { value: 1920 / 1280 }, // 画像のアスペクト
+  uPlaneAspect: { value: 800 / 500 }, // プレーンのアスペクト
+}
+const geo = new THREE.PlaneBufferGeometry(800, 500, 100, 100)
+const mat = new THREE.ShaderMaterial({
+  uniforms,
+  vertexShader: vertexSource,
+  fragmentShader: fragmentSource,
+})
+
+const mesh = new THREE.Mesh(geo, mat)
+
+scene.add(mesh)
+
+// 毎フレーム呼び出す
+const loop = () => {
+  renderer.render(scene, camera)
+
+  requestAnimationFrame(loop)
+}
+
+const main = () => {
+  window.addEventListener('load', () => {
+    loop()
+  })
+}
+
+main()

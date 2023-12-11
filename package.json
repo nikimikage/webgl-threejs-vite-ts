@@ -13,7 +13,7 @@
     "@types/three": "^0.143.1",
     "prettier": "^2.7.1",
     "typescript": "^4.6.4",
-    "vite": "^3.0.7"
+    "vite": "^3.2.7"
   },
   "dependencies": {
     "three": "^0.143.0"

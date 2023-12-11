@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="/media/examples/link-element-example.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="./main.ts"></script>
     <title>Sample</title>
   </head>
-  <body>
-    <script type="module" src="./main.ts"></script>
-  </body>
+  <div class="webgl-canvas">
+    <canvas id="webgl-canvas" class="webgl-canvas__body"></canvas>
+  </div>
 </html>
